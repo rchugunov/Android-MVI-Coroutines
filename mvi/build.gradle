@@ -1,16 +1,20 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'co.riiid.gradle'
+
+def releaseName = "1.0.0"
+
+Properties localProperties = new Properties()
+localProperties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
     compileSdkVersion 28
-
-
 
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName releaseName
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -23,6 +27,22 @@ android {
         }
     }
 
+}
+
+// ./gradlew :mvi:githubRelease
+github {
+    owner "rchugunov"
+    repo "Android-MVI-Coroutines"
+    token = localProperties.getProperty("githubToken")
+    tagName = releaseName
+    targetCommitish = 'master'
+    name = "v$releaseName"
+    body = """# Simple MVI Android
+Initial version
+"""
+    assets = [
+            'build/outputs/aar/mvi-debug.aar'
+    ]
 }
 
 dependencies {
