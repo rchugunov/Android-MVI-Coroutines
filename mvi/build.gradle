@@ -25,7 +25,7 @@ android {
 github {
     owner "rchugunov"
     repo "Android-MVI-Coroutines"
-    token = localProperties.getProperty("githubToken")
+    token = localProperties.getProperty("githubToken", "put_your_token_in_local.properties")
     tagName = releaseName
     targetCommitish = 'master'
     name = "v$releaseName"
