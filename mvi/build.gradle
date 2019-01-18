@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'co.riiid.gradle'
 
-def releaseName = "1.0.0"
+def releaseName = "1.0.1"
 
 Properties localProperties = new Properties()
 localProperties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -19,14 +19,6 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
 }
 
 // ./gradlew :mvi:githubRelease
@@ -37,8 +29,8 @@ github {
     tagName = releaseName
     targetCommitish = 'master'
     name = "v$releaseName"
-    body = """# Simple MVI Android
-Initial version
+    body = """# Simple MVI Android 1.0.1
+Added `clearSingleEventsState` metod to `MviBaseViewModel` 
 """
     assets = [
             'build/outputs/aar/mvi-debug.aar'
@@ -50,7 +42,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1'
 
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1'

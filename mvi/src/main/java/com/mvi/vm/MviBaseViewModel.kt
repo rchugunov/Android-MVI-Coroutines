@@ -3,13 +3,10 @@ package com.mvi.vm
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.mvi.view.MVIView
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -26,18 +23,28 @@ abstract class MviBaseViewModel<VS : MVIView.ViewState, StateChanges>(
 
     protected abstract val initialViewState: VS
 
-    protected abstract suspend fun bindIntentsActual(): Array<ReceiveChannel<StateChanges>>
-    protected abstract fun handleStateChanges(previousState: VS, stateChanges: StateChanges): VS
 
     init {
         bindIntentChannels()
     }
 
+    /**
+     * Return array of channels which represent intents coming from component using this viewmodel
+     */
+    protected abstract suspend fun bindIntentsActual(): Array<ReceiveChannel<StateChanges>>
+
+    /**
+     * Reduce logic for the viewState {@code previousState}
+     * @param previousState the most recent viewState
+     */
+    protected abstract fun handleStateChanges(previousState: VS, stateChanges: StateChanges): VS
+
+    @ExperimentalCoroutinesApi
     private fun bindIntentChannels() {
         launch(uiDispatcher) {
             mergeIntents(bindIntentsActual())
                     .foldChannel(initialViewState) { lastViewState, stateChanges ->
-                        handleStateChanges(lastViewState, stateChanges)
+                        handleStateChanges(clearSingleEventsState(lastViewState), stateChanges)
                     }
                     .consumeEach { viewState ->
                         this@MviBaseViewModel.viewState.value = viewState
@@ -45,7 +52,13 @@ abstract class MviBaseViewModel<VS : MVIView.ViewState, StateChanges>(
         }
     }
 
+    /**
+     * Clear such fields as exceptions, messages thrown in UI etc
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    protected fun clearSingleEventsState(vs : VS) : VS = vs
 
+    @ExperimentalCoroutinesApi
     private fun mergeIntents(publishers: Array<ReceiveChannel<StateChanges>>) = produce {
         publishers.forEach { publisher ->
             launch(uiDispatcher) {
@@ -56,8 +69,7 @@ abstract class MviBaseViewModel<VS : MVIView.ViewState, StateChanges>(
         }
     }
 
-
-
+    @ExperimentalCoroutinesApi
     private suspend inline fun <E, R> ReceiveChannel<E>.foldChannel(initial: R, crossinline operation: (acc: R, E) -> R): ReceiveChannel<R> =
             produce {
                 var accumulator = initial
