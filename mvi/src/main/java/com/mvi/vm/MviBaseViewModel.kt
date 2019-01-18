@@ -56,7 +56,7 @@ abstract class MviBaseViewModel<VS : MVIView.ViewState, StateChanges>(
      * Clear such fields as exceptions, messages thrown in UI etc
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    protected fun clearSingleEventsState(vs : VS) : VS = vs
+    protected open fun clearSingleEventsState(vs: VS): VS = vs
 
     @ExperimentalCoroutinesApi
     private fun mergeIntents(publishers: Array<ReceiveChannel<StateChanges>>) = produce {
